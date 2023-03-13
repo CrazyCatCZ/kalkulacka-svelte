@@ -1,1 +1,1 @@
-# kalkulacka-svelte
+# kalkulacka-svelte-chatgpt
