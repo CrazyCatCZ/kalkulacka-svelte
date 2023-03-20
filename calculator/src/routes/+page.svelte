@@ -1,116 +1,93 @@
 <script>
-  let displayValue = "0";
+  import { updateButtonCounts } from '../../api/update-statistic.js';
+  import { getButtonCounts } from '../../api/get-statistic.js';
+
+  let displayValue = '0';
   let buttonCounts = {};
 
-  function handleClick(e) {
-    const buttonValue = e.target.textContent;
-
-    switch (buttonValue) {
-      case "C":
-        displayValue = "0";
-        break;
-      case "=":
-        displayValue = eval(displayValue);
-        break;
-      default:
-        if (displayValue === "0") {
-          displayValue = buttonValue;
-        } else {
-          displayValue += buttonValue;
-        }
-        if (!buttonCounts[buttonValue]) {
-          buttonCounts[buttonValue] = 1;
-        } else {
-          buttonCounts[buttonValue]++;
-        }
-        break;
+  async function handleClick(buttonValue) {
+    if (buttonValue === 'C') {
+      displayValue = '0';
+    } else if (buttonValue === '=') {
+      displayValue = eval(displayValue);
+    } else {
+      if (displayValue === '0') {
+        displayValue = buttonValue;
+      } else {
+        displayValue += buttonValue;
       }
-
-     buttonCounts = {...buttonCounts}; // trigger reactivity
+      await updateButtonCounts(buttonValue);
+      buttonCounts = await getButtonCounts();
+    }
   }
 </script>
 
 <div class="calculator">
   <div class="display">{displayValue}</div>
-  <button on:click={handleClick}>7</button>
-  <button on:click={handleClick}>8</button>
-  <button on:click={handleClick}>9</button>
-  <button on:click={handleClick}>/</button>
-  <button on:click={handleClick}>4</button>
-  <button on:click={handleClick}>5</button>
-  <button on:click={handleClick}>6</button>
-  <button on:click={handleClick}>*</button>
-  <button on:click={handleClick}>1</button>
-  <button on:click={handleClick}>2</button>
-  <button on:click={handleClick}>3</button>
-  <button on:click={handleClick}>-</button>
-  <button on:click={handleClick}>+</button>
-  <button on:click={handleClick}>0</button>
-  <button on:click={handleClick}>.</button>
-  <button on:click={handleClick}>=</button>
-  <button on:click={handleClick}>C</button>
-
+  <div class="buttons">
+    <button on:click={() => handleClick('7')}>7</button>
+    <button on:click={() => handleClick('8')}>8</button>
+    <button on:click={() => handleClick('9')}>9</button>
+    <button on:click={() => handleClick('/')}>/</button>
+    <button on:click={() => handleClick('4')}>4</button>
+    <button on:click={() => handleClick('5')}>5</button>
+    <button on:click={() => handleClick('6')}>6</button>
+    <button on:click={() => handleClick('*')}>*</button>
+    <button on:click={() => handleClick('1')}>1</button>
+    <button on:click={() => handleClick('2')}>2</button>
+    <button on:click={() => handleClick('3')}>3</button>
+    <button on:click={() => handleClick('-')}>-</button>
+    <button on:click={() => handleClick('0')}>0</button>
+    <button on:click={() => handleClick('.')}>.</button>
+    <button on:click={() => handleClick('=')}>=</button>
+    <button on:click={() => handleClick('+')}>+</button>
+    <button on:click={() => handleClick('C')}>C</button>
+  </div>
+  <div class="statistics">
+    {#each Object.keys(buttonCounts) as buttonValue}
+      <div>{buttonValue}: {buttonCounts[buttonValue]}</div>
+    {/each}
+  </div>
 </div>
-<ul class="button-counts">
-  {#each Object.keys(buttonCounts) as button}
-    <li>{button}: {buttonCounts[button]}</li>
-  {/each}
-</ul>
 
 <style>
-  .calculator, .button-counts {
-    width: 50%;
-    margin: auto;
-
+  .calculator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
- 
-.calculator {
-  margin-top: 5em;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  grid-gap: 10px;
-  padding: 10px;
-  background-color: #eee;
-  border-radius: 5px;
-}
 
-.display {
-  grid-column: 1 / -1;
-  text-align: right;
-  font-size: 2rem;
-  margin-bottom: 10px;
-  padding: 10px;
-  background-color: white;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-}
+  .display {
+    font-size: 32px;
+    margin: 10px;
+  }
 
-button {
-  font-size: 1.5rem;
-  padding: 10px;
-  background-color: #f7f7f7;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.2s ease-in-out;
-}
+  .buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin: 10px;
+  }
 
-button:hover {
-  background-color: #ddd;
-}
+  .buttons button {
+    font-size: 24px;
+    padding: 10px;
+    border-radius: 5px;
+    border: none;
+    background-color: #f0f0f0;
+    cursor: pointer;
+  }
 
-button:active {
-  background-color: #ccc;
-}
+  .buttons button:hover {
+    background-color: #e0e0e0;
+  }
 
-.button-counts {
-  margin-top: 10px;
-  padding: 0;
-  list-style: none;
-}
+  .buttons button:active {
+    background-color: #d0d0d0;
+  }
 
-.button-counts li {
-  margin: 5px 0;
-  font-size: 1rem;
-} 
+  .statistics {
+    margin-top: 20px;
+    font-size: 18px;
+  }
 </style>
