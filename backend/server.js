@@ -1,33 +1,24 @@
 import express from "express";
-import { updateButtonCounts } from '../calculator/api/update-statistic.js'
-import { getButtonCounts } from '../calculator/api/get-statistic.js'
+import simpleDB from "simple-json-db";
+import cors from "cors";
+import bodyParser from "body-parser";
 
 const app = express();
+const db = new simpleDB("./data/data.json");
 
-// Endpoint to update button click statistics
-app.post('/api/update-statistic', async (req, res) => {
-  const { buttonValue } = req.body;
+app.use(cors());
+app.use(bodyParser.json());
 
-try {
-    await updateButtonCounts(buttonValue);
-    res.status(200).send('Button count updated successfully.');
-  } catch (err) {
-    console.error(err);
-    res.status(500).send('Error updating button count.');
-  }
-});
+app.post("/clicks", (req, res) => {
+  const { button } = req.body;
+  const count = db.get(button) || 0;
 
-// Endpoint to get button click statistics
-app.get('/api/get-statistic', async (req, res) => {
-  try {
-    const buttonCounts = await getButtonCounts();
-    res.status(200).json(buttonCounts);
-  } catch (err) {
-    console.error(err);
-    res.status(500).send('Error retrieving button counts.');
-  }
+  db.set(button, count + 1);
+
+  const counts = db.JSON();
+  res.json(counts);
 });
 
 app.listen(3000, () => {
-  console.log('Server started on port 3000.');
+  console.log("Server started on port 3000.");
 });

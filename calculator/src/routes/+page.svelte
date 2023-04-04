@@ -1,11 +1,31 @@
 <script>
-  import { updateButtonCounts } from '../../api/update-statistic.js';
-  import { getButtonCounts } from '../../api/get-statistic.js';
+	import { construct_svelte_component } from "svelte/internal";
+
 
   let displayValue = '0';
-  let buttonCounts = {};
+  let counts = {};
+
+  async function updateCounts(button) {
+    const response = await fetch('http://localhost:3000/clicks', {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        button
+      })
+    });
+
+    if (response.ok) {
+      const newCounts = await response.json();
+      console.log(newCounts)
+      counts = newCounts;
+    }
+  }
 
   async function handleClick(buttonValue) {
+    updateCounts(buttonValue)
+    
     if (buttonValue === 'C') {
       displayValue = '0';
     } else if (buttonValue === '=') {
@@ -16,8 +36,6 @@
       } else {
         displayValue += buttonValue;
       }
-      await updateButtonCounts(buttonValue);
-      buttonCounts = await getButtonCounts();
     }
   }
 </script>
@@ -43,10 +61,23 @@
     <button on:click={() => handleClick('+')}>+</button>
     <button on:click={() => handleClick('C')}>C</button>
   </div>
-  <div class="statistics">
-    {#each Object.keys(buttonCounts) as buttonValue}
-      <div>{buttonValue}: {buttonCounts[buttonValue]}</div>
-    {/each}
+  <div class="statistic">
+    <table>
+      <thead>
+        <tr>
+          <th>Tlačítko</th>
+          <th>Počet stisknutí</th>
+        </tr>
+      </thead>
+      <tbody>
+        {#each Object.keys(counts) as button}
+          <tr>
+            <td>{button}</td>
+            <td>{counts[button]}</td>
+          </tr>
+        {/each}
+      </tbody>
+    </table>
   </div>
 </div>
 
@@ -86,7 +117,7 @@
     background-color: #d0d0d0;
   }
 
-  .statistics {
+  .statistic {
     margin-top: 20px;
     font-size: 18px;
   }
